@@ -1,11 +1,11 @@
 {
  "vault": "Axis",
- "repo": "clearuno/game-log",
+ "repo": "junyoungk6/game-log",
  "games": [
   {
    "id": "니케",
    "name": "니케",
-   "file": "Resources/게임/니케.md",
+   "file": "30 Resources/게임/니케.md",
    "accent": "rose",
    "notes": [
     "출처: [NIKKE 스토리 감상 순서 가이드](https://ssissun.github.io/nikke-storyline/) (커뮤니티 추천 순서, 릴리즈 순 아님)",
@@ -133,7 +133,7 @@
      "tags": [
       "이벤트 · 신년 필수"
      ],
-     "done": true,
+     "done": false,
      "key": "니케::NEW YEAR, NEW SWORD"
     },
     {
@@ -169,7 +169,7 @@
      "tags": [
       "이벤트 · 1.5주년 필수"
      ],
-     "done": true,
+     "done": false,
      "key": "니케::LAST KINGDOM"
     },
     {
@@ -495,12 +495,15 @@
   {
    "id": "림버스컴퍼니",
    "name": "림버스컴퍼니",
-   "file": "Resources/게임/림버스컴퍼니.md",
+   "file": "30 Resources/게임/림버스컴퍼니.md",
    "accent": "orange",
    "notes": [
     "메인스토리(칸토)와 .5장(인터미션) 전부 1개씩 항목화",
     "현재까지 나온 분량(지옥편 9장 + 9.5장까지)을 100% 기준으로 잡음",
-    "8.5EX \"선의의 순례\"(명일방주 콜라보, 기간 한정 완전 삭제)와 발푸르기스/만우절 등 미니 스토리는 목록·진행도 계산에서 제외"
+    "8.5EX \"선의의 순례\"(명일방주 콜라보, 기간 한정 완전 삭제)와 발푸르기스/만우절 등 미니 스토리는 목록·진행도 계산에서 제외",
+    "[!tip] 📝 감상 보는 법",
+    "각 항목 끝 📝 → [[림버스컴퍼니 감상]]의 해당 장으로 이동",
+    "**Ctrl+Alt+클릭** 하면 오른쪽에 나란히 열림 · **Ctrl+마우스 올리기** 하면 팝업으로 미리보기"
    ],
    "items": [
     {
@@ -536,13 +539,13 @@
     {
      "min": 249,
      "title": "4장 변하지 않는",
-     "done": true,
+     "done": false,
      "key": "림버스컴퍼니::4장 변하지 않는"
     },
     {
      "min": 62,
      "title": "4.5장 우.미.다",
-     "done": true,
+     "done": false,
      "key": "림버스컴퍼니::4.5장 우.미.다"
     },
     {
@@ -634,7 +637,7 @@
   {
    "id": "명조",
    "name": "명조",
-   "file": "Resources/게임/명조.md",
+   "file": "30 Resources/게임/명조.md",
    "accent": "violet",
    "notes": [
     "K tube 채널 \"메인 스토리 몰아보기\" 영상 목록 기준으로 정리",
@@ -899,7 +902,7 @@
   {
    "id": "블루아카이브",
    "name": "블루 아카이브",
-   "file": "Resources/게임/블루아카이브.md",
+   "file": "30 Resources/게임/블루아카이브.md",
    "accent": "blue",
    "notes": [
     "1부 최종장까지 이벤트 포함 스토리 순서",
@@ -1196,7 +1199,7 @@
   {
    "id": "젠레스 존 제로",
    "name": "젠레스 존 제로",
-   "file": "Resources/게임/젠레스 존 제로.md",
+   "file": "30 Resources/게임/젠레스 존 제로.md",
    "accent": "green",
    "notes": [
     "순서는 공식 추천 감상 순서표 기준 (릴리즈 순서 아님). 메인 챕터 제외 항목은 제목 옆 괄호에 스토리 중요도 별점 표기",
@@ -1669,5 +1672,5 @@
    "key": "백로그::데메크5"
   }
  ],
- "saved": "2026-09-18 03:27"
+ "saved": "2026-09-28 23:15"
 }

@@ -235,7 +235,7 @@ footer{font-size:12px;color:var(--faint)}
 
 <script>
 const EMBEDDED = /*__DATA__*/null;   // 아티팩트 스냅샷이면 데이터가 들어 있음 (읽기 전용)
-const REPO = "clearuno/game-log";
+const REPO = "junyoungk6/game-log";
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -353,6 +353,7 @@ function setState(s, msg = ""){
 /* ── 렌더링 ─────────────────────────────────────────── */
 
 function renderEdit(){
+  $("#repo-name").textContent = REPO;
   const el = $("#edit");
   if (EMBEDDED || !DATA){ el.hidden = true; return; }
   el.hidden = false;
