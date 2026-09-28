@@ -11,38 +11,42 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
 <style>
+@property --p { syntax: "<number>"; inherits: false; initial-value: 0; }
+
 :root{
-  --ground:#EEF0F4; --surface:#FFFFFF; --sunk:#E4E7EE;
+  --ground:#EEF0F4; --surface:#FFFFFF; --sunk:#E4E7EE; --veil:rgb(255 255 255 / .82);
   --ink:#171A22; --muted:#5B6173; --faint:#8A90A0; --line:#D9DDE6;
-  --todo:#D3D7E0;
+  --todo:#D3D7E0; --shadow:0 1px 2px rgb(16 20 30 / .05), 0 8px 24px rgb(16 20 30 / .06);
   --violet:#6A47F0; --orange:#D9621A; --green:#2F8F3A; --rose:#CF3467; --blue:#1C72D6; --teal:#138A86; --amber:#B7791F;
   --warn:#A15C00;
   --display:"Do Hyeon","IBM Plex Sans KR",system-ui,sans-serif;
   --body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --ease:cubic-bezier(.22,.61,.36,1);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --ground:#101217; --surface:#181B22; --sunk:#20242D;
-    --ink:#E8EAF0; --muted:#A0A6B6; --faint:#6F7586; --line:#2A2E38;
-    --todo:#2E333E;
+    --ground:#0F1116; --surface:#171A21; --sunk:#1F232B; --veil:rgb(23 26 33 / .82);
+    --ink:#E8EAF0; --muted:#A0A6B6; --faint:#6F7586; --line:#282C36;
+    --todo:#2C313B; --shadow:0 1px 2px rgb(0 0 0 / .4), 0 12px 32px rgb(0 0 0 / .32);
     --violet:#A08DFF; --orange:#FF9550; --green:#6FD07A; --rose:#FF7CA5; --blue:#6AB0FF; --teal:#4FD1CB; --amber:#F2B455;
     --warn:#F2B455;
   }
 }
 :root[data-theme="dark"]{
-  --ground:#101217; --surface:#181B22; --sunk:#20242D;
-  --ink:#E8EAF0; --muted:#A0A6B6; --faint:#6F7586; --line:#2A2E38;
-  --todo:#2E333E;
+  --ground:#0F1116; --surface:#171A21; --sunk:#1F232B; --veil:rgb(23 26 33 / .82);
+  --ink:#E8EAF0; --muted:#A0A6B6; --faint:#6F7586; --line:#282C36;
+  --todo:#2C313B; --shadow:0 1px 2px rgb(0 0 0 / .4), 0 12px 32px rgb(0 0 0 / .32);
   --violet:#A08DFF; --orange:#FF9550; --green:#6FD07A; --rose:#FF7CA5; --blue:#6AB0FF; --teal:#4FD1CB; --amber:#F2B455;
   --warn:#F2B455;
 }
 *{box-sizing:border-box}
 body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:32px 64px;display:grid;gap:28px}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:32px 72px;display:grid;gap:24px}
 button{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--acc,var(--blue));outline-offset:2px}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+canvas{display:block;width:100%;height:100%}
 
 /* 헤더 */
 .top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 32px}
@@ -54,38 +58,72 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(32px,5vw,46px);lin
 .sum dd{margin:0;font-family:var(--display);font-size:26px;line-height:1.1}
 .sum dd small{font-family:var(--body);font-size:13px;color:var(--muted);margin-left:2px}
 
-/* 게임 선택 카드 */
-.games{display:grid;gap:10px;grid-template-columns:repeat(5,minmax(0,1fr))}
-.game{--acc:var(--blue);text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 14px 12px;cursor:pointer;display:grid;gap:8px;align-content:start;transition:border-color .15s,transform .15s}
-.game:hover{border-color:var(--acc)}
-.game[aria-selected="true"]{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+/* 편집 상태 */
+.edit{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;margin-top:-8px}
+.state{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.state::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.state[data-s="saved"]::before{background:var(--green)}
+.state[data-s="pending"]::before,.state[data-s="saving"]::before{background:var(--amber);animation:pulse 1s infinite alternate}
+.state[data-s="error"]{color:var(--rose)}
+.state[data-s="error"]::before{background:var(--rose)}
+@keyframes pulse{to{opacity:.35}}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;transition:border-color .15s,transform .15s}
+.btn:hover{border-color:var(--ink)}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.danger{color:var(--rose)}
+.btn.wide{width:100%;justify-content:center;display:flex;padding:10px;font-size:14px}
+.btn.acc{background:var(--acc);border-color:var(--acc);color:var(--surface);font-weight:600}
+
+/* 게임 카드 */
+.games{display:grid;gap:12px;grid-template-columns:repeat(5,minmax(0,1fr))}
+.game{--acc:var(--blue);position:relative;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0 0 12px;cursor:pointer;display:grid;gap:8px;align-content:start;overflow:hidden;box-shadow:var(--shadow);
+  transition:transform .25s var(--ease),border-color .2s,box-shadow .25s}
+.game:hover{transform:translateY(-3px);border-color:var(--acc)}
+.game[aria-selected="true"]{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc),var(--shadow)}
+.game .art{height:64px;position:relative}
+.game .art::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,var(--surface))}
+.game-body{display:grid;gap:8px;padding-inline:14px}
 .game-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .game-name{font-weight:600;font-size:15px}
 .game-pct{font-family:var(--display);font-size:30px;line-height:1;color:var(--acc)}
 .game-pct small{font-size:16px}
 .bar{height:6px;border-radius:3px;background:var(--todo);overflow:hidden}
-.bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:3px;transition:width .7s var(--ease)}
 .game-meta{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:6px}
 .game-next{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .game-next b{font-weight:500;color:var(--ink)}
+.games.enter .game{opacity:0;animation:rise .5s var(--ease) forwards;animation-delay:calc(var(--i) * 60ms)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
-/* 상세 패널 */
-.detail{--acc:var(--blue);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px;display:grid;gap:20px}
-.d-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px 24px}
-.d-head h2{font-family:var(--display);font-weight:400;font-size:34px;line-height:1;margin:0}
-.d-file{font-size:12px;color:var(--faint);margin-top:6px}
-.d-stats{display:flex;gap:24px;flex-wrap:wrap}
+/* 상세 */
+.detail{--acc:var(--blue);background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.detail.swap{animation:swap .45s var(--ease)}
+@keyframes swap{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.hero{position:relative;padding:20px 24px;display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center;justify-content:space-between;isolation:isolate}
+.hero .art{position:absolute;inset:0;z-index:-2}
+.hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(105deg,var(--veil) 45%,transparent)}
+.hero h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,4vw,38px);line-height:1;margin:0}
+.d-file{font-size:12px;color:var(--muted);margin-top:6px}
+.ring{--p:0;width:92px;height:92px;border-radius:50%;display:grid;place-items:center;flex:none;
+  background:conic-gradient(var(--acc) calc(var(--p) * 1%), var(--todo) 0);transition:--p 1s var(--ease)}
+.ring span{width:74px;height:74px;border-radius:50%;background:var(--surface);display:grid;place-items:center;
+  font-family:var(--display);font-size:24px;color:var(--acc)}
+.body{padding:20px 24px 24px;display:grid;gap:18px}
+.d-stats{display:flex;gap:22px;flex-wrap:wrap;margin:0}
 .d-stats div{display:grid}
 .d-stats dt{font-size:12px;color:var(--muted)}
-.d-stats dd{margin:0;font-family:var(--display);font-size:24px;line-height:1.1}
-.d-stats dd.acc{color:var(--acc)}
+.d-stats dd{margin:0;font-family:var(--display);font-size:22px;line-height:1.1}
 
 .strip-box{display:grid;gap:6px}
 .strip{display:flex;gap:2px;height:30px;align-items:stretch}
-.seg{flex-basis:0;min-width:3px;background:var(--todo);border-radius:2px;cursor:pointer;border:0;padding:0}
+.seg{flex-basis:0;min-width:3px;background:var(--todo);border-radius:2px;cursor:pointer;border:0;padding:0;transition:transform .15s,filter .15s}
 .seg.done{background:var(--acc)}
 .seg.next{background:repeating-linear-gradient(135deg,var(--acc) 0 3px,transparent 3px 7px);box-shadow:inset 0 0 0 1.5px var(--acc)}
 .seg:hover{filter:brightness(1.15);transform:scaleY(1.12)}
+.detail.swap .seg{animation:grow .5s var(--ease) backwards;animation-delay:calc(var(--i) * 6ms)}
+@keyframes grow{from{transform:scaleY(.15)}to{transform:none}}
 .strip-legend{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--muted)}
 .strip-legend span{display:inline-flex;align-items:center;gap:6px}
 .sw{width:10px;height:10px;border-radius:2px;display:inline-block;background:var(--todo)}
@@ -94,68 +132,79 @@ h1{font-family:var(--display);font-weight:400;font-size:clamp(32px,5vw,46px);lin
 
 .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
-.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer;color:var(--muted)}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer;color:var(--muted);transition:background .2s,color .2s,border-color .2s}
 .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
 .src summary{font-size:13px;color:var(--muted);cursor:pointer}
 .src ul{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--muted);display:grid;gap:4px;max-width:70ch}
 .src a{color:var(--acc)}
 
-.list{display:grid;gap:0}
+/* 목록 */
+.list{display:grid}
 .group-h{font-size:12px;letter-spacing:.06em;color:var(--muted);padding:16px 0 6px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
 .group-h:first-child{padding-top:0}
-.row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding:9px 0;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding:8px 0;border-bottom:1px solid var(--line);
+  -webkit-touch-callout:none;border-radius:8px;transition:background .2s}
 .row:last-child{border-bottom:0}
+.row:hover{background:color-mix(in srgb,var(--acc) 5%,transparent)}
+.row.pressing{background:color-mix(in srgb,var(--acc) 12%,transparent);transform:scale(.995)}
 .row.flash{animation:flash 1.2s ease-out}
 @keyframes flash{0%{background:color-mix(in srgb,var(--acc) 22%,transparent)}100%{background:transparent}}
-.box{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--faint);margin-top:2px;display:grid;place-items:center}
+.box-btn{background:none;border:0;padding:4px;margin:2px 0 0;cursor:pointer;border-radius:8px;display:grid;justify-self:start}
+.box{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--faint);display:grid;place-items:center;transition:background .2s,border-color .2s,transform .2s}
+.box-btn:hover .box{border-color:var(--acc)}
 .row.done .box{background:var(--acc);border-color:var(--acc)}
 .box svg{width:12px;height:12px;fill:none;stroke:var(--surface);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
-.r-title{min-width:0}
+.row.just .box{animation:pop .35s var(--ease)}
+.row.just .box svg path{stroke-dasharray:14;animation:draw .35s var(--ease)}
+@keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.15)}100%{transform:none}}
+@keyframes draw{from{stroke-dashoffset:14}to{stroke-dashoffset:0}}
+.r-title{min-width:0;background:none;border:0;padding:0;text-align:left;cursor:pointer;display:grid;gap:3px;font:inherit}
 .row.done .r-title .t{color:var(--muted)}
-.t{overflow-wrap:anywhere}
-.r-sub{display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:3px;font-size:12px;color:var(--muted);align-items:center}
+.t{overflow-wrap:anywhere;display:flex;gap:6px;align-items:baseline}
+.t::after{content:"›";color:var(--faint);opacity:0;transition:opacity .2s,transform .2s}
+.row:hover .t::after,.r-title:focus-visible .t::after{opacity:1;transform:translateX(2px)}
+.r-sub{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:12px;color:var(--muted);align-items:center}
 .tag{border:1px solid var(--line);border-radius:4px;padding:0 6px;line-height:18px}
 .tag.req{border-color:var(--acc);color:var(--acc)}
 .stars{color:var(--acc);letter-spacing:1px}
 .stars .off{color:var(--todo)}
 .warn{color:var(--warn)}
 .next-badge{background:var(--acc);color:var(--surface);border-radius:4px;padding:0 6px;line-height:18px;font-weight:600}
-.review{grid-column:2/4;margin:4px 0 0;padding:8px 12px;border-left:2px solid var(--acc);background:var(--sunk);border-radius:0 6px 6px 0;font-size:13px;color:var(--ink);white-space:pre-wrap}
-.r-min{font-size:13px;color:var(--muted);text-align:right;padding-top:2px}
+.has-syn{color:var(--acc)}
+.r-min{font-size:13px;color:var(--muted);text-align:right;padding-top:4px}
 .r-min.zero{color:var(--warn)}
 .empty{color:var(--muted);font-size:14px;padding:20px 0}
+.list.enter .row{opacity:0;animation:rise .4s var(--ease) forwards;animation-delay:calc(var(--i) * 12ms)}
 
-/* 체크 버튼 */
-.box-btn{background:none;border:0;padding:4px;margin:-4px;cursor:pointer;border-radius:6px;display:grid}
-.box-btn:hover .box{border-color:var(--acc)}
-.row.done .box-btn:hover .box{filter:brightness(1.1)}
-.row.pending .box{box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 30%,transparent)}
+/* 상세 시트 */
+dialog{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:0;box-shadow:var(--shadow)}
+dialog::backdrop{background:rgb(8 10 14 / .5);backdrop-filter:blur(2px)}
+#sheet{--acc:var(--blue);border-radius:18px;width:min(560px,calc(100vw - 32px));max-height:min(86dvh,760px);overflow:auto;overscroll-behavior:contain}
+#sheet[open]{animation:sheet-in .35s var(--ease)}
+@keyframes sheet-in{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
+.sheet-art{height:150px;position:relative}
+.sheet-art::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,var(--surface))}
+.sheet-close{position:absolute;top:12px;right:12px;z-index:2;width:32px;height:32px;border-radius:50%;border:0;background:var(--veil);cursor:pointer;font-size:18px;line-height:1}
+.sheet-body{padding:0 24px 24px;display:grid;gap:16px;margin-top:-28px;position:relative}
+.sheet-chip{display:inline-flex;align-items:center;gap:6px;align-self:start;background:var(--acc);color:var(--surface);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600}
+.sheet-body h3{font-family:var(--display);font-weight:400;font-size:26px;line-height:1.15;margin:0;text-wrap:balance}
+.sheet-meta{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:13px;color:var(--muted);align-items:center;margin:0}
+.sect{display:grid;gap:6px}
+.sect h4{margin:0;font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.sect p{margin:0;font-size:14px;line-height:1.7}
+.sect .hint{color:var(--faint);font-size:13px}
+.sect code{font-family:var(--mono);font-size:12px;background:var(--sunk);padding:1px 5px;border-radius:4px}
+.review{margin:0;padding:10px 14px;border-left:2px solid var(--acc);background:var(--sunk);border-radius:0 8px 8px 0;font-size:14px;white-space:pre-wrap}
 
-/* 편집 상태 */
-.edit{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
-.state{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
-.state::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--faint)}
-.state[data-s="saved"]::before{background:var(--green)}
-.state[data-s="pending"]::before,.state[data-s="saving"]::before{background:var(--amber);animation:pulse 1s infinite alternate}
-.state[data-s="error"]{color:var(--rose)}
-.state[data-s="error"]::before{background:var(--rose)}
-@keyframes pulse{to{opacity:.35}}
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer}
-.btn:hover{border-color:var(--ink)}
-.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--surface)}
-.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
-.btn.danger{color:var(--rose)}
-
-dialog{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:24px;width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px)}
-dialog::backdrop{background:rgb(10 12 16 / .55)}
-dialog h2{font-family:var(--display);font-weight:400;font-size:26px;margin:0 0 8px}
-dialog p{margin:0 0 12px;color:var(--muted);font-size:14px}
-dialog ol{margin:0 0 16px;padding-left:20px;font-size:14px;display:grid;gap:6px}
-dialog ol b{font-weight:600}
-dialog a{color:var(--blue)}
-dialog code{font-family:var(--mono);font-size:12px;background:var(--sunk);padding:1px 5px;border-radius:4px}
-dialog label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}
-dialog input{width:100%;font:inherit;font-family:var(--mono);font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--ground);color:var(--ink)}
+/* 연결 설정 */
+#connect{border-radius:12px;width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:24px}
+#connect h2{font-family:var(--display);font-weight:400;font-size:26px;margin:0 0 8px}
+#connect p{margin:0 0 12px;color:var(--muted);font-size:14px}
+#connect ol{margin:0 0 16px;padding-left:20px;font-size:14px;display:grid;gap:6px}
+#connect a{color:var(--blue)}
+#connect code{font-family:var(--mono);font-size:12px;background:var(--sunk);padding:1px 5px;border-radius:4px}
+#connect label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}
+#connect input{width:100%;font:inherit;font-family:var(--mono);font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--ground);color:var(--ink)}
 .d-actions{display:flex;justify-content:space-between;gap:8px;margin-top:16px;flex-wrap:wrap}
 .d-actions div{display:flex;gap:8px}
 .d-err{color:var(--rose);font-size:13px;margin-top:8px;min-height:1em}
@@ -163,26 +212,30 @@ dialog input{width:100%;font:inherit;font-family:var(--mono);font-size:13px;padd
 /* 백로그 */
 .backlog h2{font-family:var(--display);font-weight:400;font-size:26px;margin:0 0 10px}
 .bl{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
-.bl li > *{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:14px;display:inline-flex;gap:8px;align-items:center;font-family:inherit;color:var(--ink)}
+.bl li > *{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;display:inline-flex;gap:8px;align-items:center;font-family:inherit;color:var(--ink);transition:border-color .2s,transform .2s}
 .bl button{cursor:pointer}
-.bl button:hover{border-color:var(--ink)}
+.bl button:hover{border-color:var(--ink);transform:translateY(-2px)}
 .bl li.done > *{color:var(--faint);text-decoration:line-through}
 .bl .dot{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--faint)}
 .bl li.done .dot{background:var(--faint)}
 footer{font-size:12px;color:var(--faint)}
 
 @media (max-width:960px){
-  .games{grid-template-columns:minmax(0,1fr)}
-  .game{grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px 16px}
-  .game .game-head{grid-column:1/-1}
-  .game .bar{grid-column:1/-1}
+  .games{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .game .art{height:52px}
 }
-@media (max-width:560px){
-  .detail{padding:16px}
-  .row{grid-template-columns:20px minmax(0,1fr) auto;gap:2px 10px}
-  .review{grid-column:1/-1}
-  .strip{height:24px;gap:1px}
-  dialog{padding:18px}
+@media (max-width:620px){
+  .games{grid-template-columns:minmax(0,1fr)}
+  .hero{padding:16px}
+  .body{padding:16px}
+  .ring{width:76px;height:76px}
+  .ring span{width:62px;height:62px;font-size:20px}
+  .row{grid-template-columns:26px minmax(0,1fr) auto;gap:2px 8px}
+  #sheet{width:100%;max-width:none;margin:auto 0 0;border-radius:18px 18px 0 0;max-height:88dvh;
+    padding-bottom:env(safe-area-inset-bottom,0px)}
+  #sheet[open]{animation:sheet-up .35s var(--ease)}
+  @keyframes sheet-up{from{transform:translateY(100%)}to{transform:none}}
+  .sheet-art{height:120px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -202,12 +255,14 @@ footer{font-size:12px;color:var(--faint)}
 
   <nav class="games" id="games" role="tablist" aria-label="게임 선택"></nav>
 
-  <section class="detail" id="detail" role="tabpanel" aria-live="polite"><p class="empty">불러오는 중…</p></section>
+  <section class="detail" id="detail" role="tabpanel" aria-live="polite"><p class="empty" style="padding:24px">불러오는 중…</p></section>
 
   <section class="backlog" id="backlog"></section>
 
   <footer id="foot"></footer>
 </div>
+
+<dialog id="sheet" aria-labelledby="sheet-title"></dialog>
 
 <dialog id="connect" aria-labelledby="connect-title">
   <form method="dialog" id="connect-form">
@@ -251,6 +306,7 @@ const store = {
 const CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.3l2.3 2.3 4.7-5"/></svg>';
 const now = () => { const d = new Date(), p = n => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+const calm = matchMedia("(prefers-reduced-motion: reduce)");
 
 let DATA = EMBEDDED;
 let token = EMBEDDED ? null : store.get("sl-token");
@@ -259,9 +315,11 @@ let filter = store.get("sl-filter") || "all";
 const pending = new Map();          // 아직 저장 안 된 체크: key → done
 let saving = false, saveTimer = null;
 let state = {s: "idle", msg: ""};
+let justToggled = null;
 
 const canEdit = () => !EMBEDDED && !!token;
 const games = () => DATA.games;
+const gameOf = id => games().find(g => g.id === id);
 const stats = items => {
   const total = items.reduce((a, i) => a + i.min, 0);
   const done = items.reduce((a, i) => a + (i.done ? i.min : 0), 0);
@@ -272,6 +330,98 @@ function findItem(data, key){
   for (const g of data.games) for (const it of g.items) if (it.key === key) return it;
   return data.backlog.find(it => it.key === key);
 }
+
+/* ── 키아트: 게임마다 다른 모티프를 코드로 그린다 (공식 이미지 아님) ── */
+
+const hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+const rng = seed => () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const rgb = hex => { const h = hex.replace("#", ""); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); };
+const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+
+const MOTIFS = {
+  // 명조 — 바람에 실려 퍼지는 잔향
+  violet(c, w, h, r, acc, ink){
+    for (let i = 0; i < 7; i++){
+      const amp = h * (.08 + r() * .22), y = h * (.2 + r() * .6), len = 2 + r() * 3;
+      c.beginPath();
+      for (let x = 0; x <= w; x += 6) c.lineTo(x, y + Math.sin(x / w * Math.PI * len + i) * amp);
+      c.strokeStyle = rgba(acc, .1 + r() * .3); c.lineWidth = .8 + r() * 3.4; c.stroke();
+    }
+    for (let i = 0; i < 26; i++){ c.beginPath(); c.arc(r() * w, r() * h, r() * 1.6 + .4, 0, 7);
+      c.fillStyle = rgba(ink, .12 + r() * .2); c.fill(); }
+  },
+  // 림버스컴퍼니 — 안개 낀 도시 위로 떠오르는 불씨
+  orange(c, w, h, r, acc, ink){
+    for (let x = 0; x < w; x += 9){
+      const bh = h * (.18 + r() * .55);
+      c.fillStyle = rgba(ink, .1 + r() * .14); c.fillRect(x, h - bh, 6 + r() * 4, bh);
+    }
+    for (let i = 0; i < 46; i++){
+      const y = r() * h, s = (1 - y / h) * 2.6 + .5;
+      c.beginPath(); c.arc(r() * w, y, s, 0, 7); c.fillStyle = rgba(acc, .25 + r() * .55); c.fill();
+    }
+  },
+  // 젠레스 존 제로 — 공동(홀로우)의 스캔라인과 글리치
+  green(c, w, h, r, acc, ink){
+    for (let y = 0; y < h; y += 4){ c.fillStyle = rgba(ink, .05 + r() * .05); c.fillRect(0, y, w, 1.4); }
+    for (let i = 0; i < 14; i++){
+      const y = r() * h, bh = 3 + r() * 14, bw = w * (.08 + r() * .3);
+      c.fillStyle = rgba(acc, .16 + r() * .4); c.fillRect(r() * w * .9, y, bw, bh);
+    }
+    c.strokeStyle = rgba(acc, .5); c.lineWidth = 2;
+    c.beginPath(); c.moveTo(0, h * .72); c.lineTo(w * .35, h * .72); c.lineTo(w * .45, h * .5); c.lineTo(w, h * .5); c.stroke();
+  },
+  // 니케 — 지평선 너머로 쏟아지는 빗줄기
+  rose(c, w, h, r, acc, ink){
+    const g = c.createRadialGradient(w * .78, h * .18, 4, w * .78, h * .18, h * 1.4);
+    g.addColorStop(0, rgba(acc, .5)); g.addColorStop(1, rgba(acc, 0));
+    c.fillStyle = g; c.fillRect(0, 0, w, h);
+    for (let i = 0; i < 60; i++){
+      const x = r() * w, y = r() * h, l = 8 + r() * 26;
+      c.beginPath(); c.moveTo(x, y); c.lineTo(x - l * .35, y + l);
+      c.strokeStyle = rgba(ink, .08 + r() * .22); c.lineWidth = .6 + r(); c.stroke();
+    }
+    c.fillStyle = rgba(ink, .16); c.fillRect(0, h * .78, w, h * .22);
+  },
+  // 블루아카이브 — 떠 있는 헤일로
+  blue(c, w, h, r, acc, ink){
+    for (let i = 0; i < 5; i++){
+      const x = r() * w, y = r() * h, rad = h * (.12 + r() * .3);
+      c.beginPath(); c.ellipse(x, y, rad, rad * .34, r() * .6 - .3, 0, 7);
+      c.strokeStyle = rgba(acc, .25 + r() * .45); c.lineWidth = 1.5 + r() * 2.5; c.stroke();
+    }
+    for (let i = 0; i < 30; i++){ c.beginPath(); c.arc(r() * w, r() * h, r() * 2 + .5, 0, 7);
+      c.fillStyle = rgba(acc, .1 + r() * .3); c.fill(); }
+  },
+};
+const FALLBACK_MOTIF = MOTIFS.violet;
+
+function paint(canvas, game, seedExtra = ""){
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if (!w || !h) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  const c = canvas.getContext("2d");
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const acc = rgb(cssVar("--" + game.accent) || "#1C72D6"), ink = rgb(cssVar("--ink"));
+  const surface = cssVar("--surface");
+  c.fillStyle = surface; c.fillRect(0, 0, w, h);
+  const g = c.createLinearGradient(0, 0, w, h);
+  g.addColorStop(0, rgba(acc, .22)); g.addColorStop(1, rgba(acc, .04));
+  c.fillStyle = g; c.fillRect(0, 0, w, h);
+  const r = rng(hash(game.id + "|" + seedExtra));
+  (MOTIFS[game.accent] || FALLBACK_MOTIF)(c, w, h, r, acc, ink);
+}
+
+function paintAll(){
+  for (const el of document.querySelectorAll("canvas[data-game]"))
+    paint(el, gameOf(el.dataset.game) || games()[0], el.dataset.seed || "");
+}
+let repaintTimer;
+addEventListener("resize", () => { clearTimeout(repaintTimer); repaintTimer = setTimeout(paintAll, 180); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => setTimeout(paintAll, 60));
 
 /* ── GitHub 저장 ─────────────────────────────────────── */
 
@@ -303,8 +453,10 @@ function toggle(key){
   if (!it || !canEdit()) return;
   it.done = !it.done;
   pending.set(key, it.done);
+  justToggled = key;
   setState("pending");
-  render(key);
+  render({focus: key});
+  if ($("#sheet").open) openSheet(sheetRef.game, sheetRef.index, true);
   clearTimeout(saveTimer);
   saveTimer = setTimeout(save, 1200);   // 연달아 체크하면 한 번에 커밋
 }
@@ -377,53 +529,64 @@ function renderSummary(){
     <div><dt>남은 분량</dt><dd>${Math.round((s.total - s.done) / 60)}<small>시간</small></dd></div>`;
 }
 
-function renderCards(){
-  $("#games").innerHTML = games().map(g => {
+function renderCards(entrance){
+  const el = $("#games");
+  el.classList.toggle("enter", !!entrance && !calm.matches);
+  el.innerHTML = games().map((g, i) => {
     const s = stats(g.items), n = nextOf(g);
     const next = n < 0 ? "<b>전부 감상 완료</b>" : `다음 <b>${esc(g.items[n].title)}</b>`;
-    return `<button class="game" role="tab" style="--acc:var(--${g.accent})" data-id="${esc(g.id)}"
+    return `<button class="game" role="tab" style="--acc:var(--${g.accent});--i:${i}" data-id="${esc(g.id)}"
         aria-selected="${g.id === current}" aria-controls="detail">
-      <div class="game-head"><span class="game-name">${esc(g.name)}</span>
-        <span class="game-pct">${s.pct}<small>%</small></span></div>
-      <div class="bar"><i style="width:${s.pct}%"></i></div>
-      <div class="game-next">${next}</div>
-      <div class="game-meta"><span class="num">${s.done.toLocaleString()} / ${s.total.toLocaleString()}분</span></div>
+      <div class="art"><canvas data-game="${esc(g.id)}" data-seed="card" aria-hidden="true"></canvas></div>
+      <div class="game-body">
+        <div class="game-head"><span class="game-name">${esc(g.name)}</span>
+          <span class="game-pct">${s.pct}<small>%</small></span></div>
+        <div class="bar"><i style="width:${s.pct}%"></i></div>
+        <div class="game-next">${next}</div>
+        <div class="game-meta"><span class="num">${s.done.toLocaleString()} / ${s.total.toLocaleString()}분</span></div>
+      </div>
     </button>`;
   }).join("");
 }
 
-function itemRow(g, it, i, n){
+function itemMeta(g, it, i, n){
   const stars = it.stars != null
     ? `<span class="stars" title="스토리 중요도 ${it.stars}/5">${"★".repeat(it.stars)}<span class="off">${"★".repeat(5 - it.stars)}</span></span>` : "";
   const tags = (it.tags || []).map(t => `<span class="tag${t.includes("필수") ? " req" : ""}">${esc(t)}</span>`).join("");
   const notes = (it.notes || []).map(t => `<span class="${/확인|⚠️/.test(t) ? "warn" : ""}">${esc(t)}</span>`).join("");
   const zero = it.min === 0 && g.items.some(x => x.min > 0);
-  const sub = [i === n ? '<span class="next-badge">다음 차례</span>' : "", stars, tags, notes,
+  return [i === n ? '<span class="next-badge">다음 차례</span>' : "", stars, tags, notes,
     zero ? '<span class="warn">분량 미확인</span>' : "",
-    it.review === "" ? '<span>감상 노트 (비어 있음)</span>' : ""].join("");
+    it.syn ? '<span class="has-syn">시놉시스</span>' : "",
+    it.review ? '<span class="has-syn">감상</span>' : ""].join("");
+}
+
+function itemRow(g, it, i, n){
   const box = `<span class="box">${it.done ? CHECK : ""}</span>`;
   const check = canEdit()
     ? `<button class="box-btn" data-key="${esc(it.key)}" aria-pressed="${it.done}" aria-label="${esc(it.title)} ${it.done ? "체크 해제" : "체크"}">${box}</button>`
-    : `<span role="img" aria-label="${it.done ? "감상함" : "안 봄"}">${box}</span>`;
-  return `<div class="row${it.done ? " done" : ""}${pending.has(it.key) ? " pending" : ""}" id="item-${i}">
+    : `<span class="box-btn" role="img" aria-label="${it.done ? "감상함" : "안 봄"}">${box}</span>`;
+  const sub = itemMeta(g, it, i, n);
+  return `<div class="row${it.done ? " done" : ""}${justToggled === it.key ? " just" : ""}" id="item-${i}" style="--i:${i}">
     ${check}
-    <div class="r-title"><div class="t">${esc(it.title)}</div>${sub ? `<div class="r-sub">${sub}</div>` : ""}</div>
-    <span class="r-min num${zero ? " zero" : ""}">${it.min}분</span>
-    ${it.review ? `<blockquote class="review">${esc(it.review)}</blockquote>` : ""}
+    <button class="r-title" data-i="${i}" aria-haspopup="dialog">
+      <span class="t">${esc(it.title)}</span>${sub ? `<span class="r-sub">${sub}</span>` : ""}
+    </button>
+    <span class="r-min num${it.min === 0 && g.items.some(x => x.min > 0) ? " zero" : ""}">${it.min}분</span>
   </div>`;
 }
 
-function renderDetail(){
-  const g = games().find(x => x.id === current);
+function renderDetail(entrance){
+  const g = gameOf(current);
   const el = $("#detail");
-  if (!g){ el.innerHTML = '<p class="empty">게임 트래커 노트를 찾지 못했어요.</p>'; return; }
+  if (!g){ el.innerHTML = '<p class="empty" style="padding:24px">게임 트래커 노트를 찾지 못했어요.</p>'; return; }
   el.style.setProperty("--acc", `var(--${g.accent})`);
   const n = nextOf(g), s = stats(g.items);
   const cnt = g.items.filter(i => i.done).length;
 
   const segs = g.items.map((it, i) => {
     const cls = it.done ? "done" : i === n ? "next" : "";
-    return `<button class="seg ${cls}" style="flex-grow:${Math.max(it.min, 8)}" data-i="${i}"
+    return `<button class="seg ${cls}" style="flex-grow:${Math.max(it.min, 8)};--i:${i}" data-i="${i}"
       title="${esc(it.title)} · ${it.min}분${it.done ? " · 감상함" : ""}" aria-label="${esc(it.title)}"></button>`;
   }).join("");
 
@@ -444,31 +607,37 @@ function renderDetail(){
   }
   if (!shown.length) list = `<p class="empty">${filter === "todo" ? "남은 항목이 없어요. 전부 봤어요!" : "아직 체크한 항목이 없어요."}</p>`;
 
+  el.classList.toggle("swap", !!entrance && !calm.matches);
   el.innerHTML = `
-    <div class="d-head">
+    <div class="hero">
+      <div class="art"><canvas data-game="${esc(g.id)}" data-seed="hero" aria-hidden="true"></canvas></div>
       <div><h2>${esc(g.name)}</h2><div class="d-file">${esc(g.file)}</div></div>
+      <div class="ring" role="img" aria-label="진행도 ${s.pct}%"><span>${s.pct}%</span></div>
+    </div>
+    <div class="body">
       <dl class="d-stats">
-        <div><dt>진행도</dt><dd class="acc">${s.pct}%</dd></div>
         <div><dt>감상</dt><dd>${hours(s.done)}</dd></div>
         <div><dt>남음</dt><dd>${hours(s.total - s.done)}</dd></div>
         <div><dt>항목</dt><dd class="num" style="font-family:var(--display)">${cnt}/${g.items.length}</dd></div>
+        <div><dt>다음 차례</dt><dd style="font-size:15px;font-family:var(--body);max-width:36ch">${n < 0 ? "없음" : esc(g.items[n].title)}</dd></div>
       </dl>
-    </div>
-    <div class="strip-box">
-      <div class="strip" aria-label="감상 순서대로 본 분량 (칸 너비 = 러닝타임)">${segs}</div>
-      <div class="strip-legend">
-        <span>감상 순서 → · 칸 너비는 러닝타임</span>
-        <span><span><i class="sw done"></i>감상함</span> <span><i class="sw next"></i>다음 차례</span> <span><i class="sw"></i>안 봄</span></span>
+      <div class="strip-box">
+        <div class="strip" aria-label="감상 순서대로 본 분량 (칸 너비 = 러닝타임)">${segs}</div>
+        <div class="strip-legend">
+          <span>감상 순서 → · 칸 너비는 러닝타임</span>
+          <span><span><i class="sw done"></i>감상함</span> <span><i class="sw next"></i>다음 차례</span> <span><i class="sw"></i>안 봄</span></span>
+        </div>
       </div>
-    </div>
-    <div class="controls">
-      <div class="chips" role="group" aria-label="목록 필터">
-        ${[["all","전체"],["todo","남은 것"],["done","본 것"]].map(([k, l]) =>
-          `<button class="chip" data-f="${k}" aria-pressed="${filter === k}">${l}</button>`).join("")}
+      <div class="controls">
+        <div class="chips" role="group" aria-label="목록 필터">
+          ${[["all","전체"],["todo","남은 것"],["done","본 것"]].map(([k, l]) =>
+            `<button class="chip" data-f="${k}" aria-pressed="${filter === k}">${l}</button>`).join("")}
+        </div>
+        ${g.notes.length ? `<details class="src"><summary>노트 메모 보기</summary><ul>${g.notes.map(t => `<li>${linkify(t)}</li>`).join("")}</ul></details>` : ""}
       </div>
-      ${g.notes.length ? `<details class="src"><summary>노트 메모 보기</summary><ul>${g.notes.map(t => `<li>${linkify(t)}</li>`).join("")}</ul></details>` : ""}
-    </div>
-    <div class="list">${list}</div>`;
+      <div class="list${entrance && !calm.matches ? " enter" : ""}">${list}</div>
+    </div>`;
+  requestAnimationFrame(() => $(".ring", el)?.style.setProperty("--p", s.pct));
 }
 
 function renderBacklog(){
@@ -481,22 +650,67 @@ function renderBacklog(){
       : `<span><span class="dot"></span>${esc(x.title)}</span>`}</li>`).join("")}</ul>`;
 }
 
-function render(focusKey){
+function render(opts = {}){
   if (!games().some(g => g.id === current)) current = games()[0]?.id;
   renderSummary();
-  renderCards();
-  renderDetail();
+  renderCards(opts.entrance);
+  renderDetail(opts.entrance || opts.swap);
   renderBacklog();
   renderEdit();
+  paintAll();
   $("#foot").textContent = DATA.saved ? `마지막 변경 ${DATA.saved}` : "";
-  if (focusKey) document.querySelector(`[data-key="${CSS.escape(focusKey)}"]`)?.focus();
+  if (opts.focus) document.querySelector(`[data-key="${CSS.escape(opts.focus)}"]`)?.focus();
+  justToggled = null;
 }
 
 function select(id){
+  if (id === current) return;
   current = id;
   store.set("sl-game", id);
   history.replaceState(null, "", "#" + encodeURIComponent(id));
-  render();
+  render({swap: true});
+}
+
+/* ── 상세 시트 ──────────────────────────────────────── */
+
+const sheet = $("#sheet");
+let sheetRef = {game: null, index: 0};
+
+function openSheet(gameId, index, keepOpen){
+  const g = gameOf(gameId);
+  const it = g?.items[index];
+  if (!it) return;
+  sheetRef = {game: gameId, index};
+  const n = nextOf(g);
+  const meta = [
+    `${it.min}분`,
+    it.group ? esc(it.group) : "",
+    it.stars != null ? `중요도 ${"★".repeat(it.stars)}${"☆".repeat(5 - it.stars)}` : "",
+    ...(it.tags || []).map(esc),
+    ...(it.notes || []).map(t => `<span class="warn">${esc(t)}</span>`),
+  ].filter(Boolean).join(" · ");
+
+  sheet.style.setProperty("--acc", `var(--${g.accent})`);
+  sheet.innerHTML = `
+    <button class="sheet-close" id="sheet-close" aria-label="닫기">✕</button>
+    <div class="sheet-art"><canvas data-game="${esc(g.id)}" data-seed="${esc(it.key)}" aria-hidden="true"></canvas></div>
+    <div class="sheet-body">
+      <span class="sheet-chip">${esc(g.name)} · ${index + 1}번째${index === n ? " · 다음 차례" : ""}</span>
+      <h3 id="sheet-title">${esc(it.title)}</h3>
+      <p class="sheet-meta">${meta}</p>
+      <div class="sect">
+        <h4>시놉시스 (스포 없음)</h4>
+        ${it.syn ? `<p>${esc(it.syn)}</p>`
+          : `<p class="hint">아직 없어요. 옵시디언 노트의 이 항목 줄에 <code>(syn:: 스포 없는 줄거리)</code> 를 적으면 여기에 나와요.</p>`}
+      </div>
+      ${it.review ? `<div class="sect"><h4>내 감상</h4><blockquote class="review">${esc(it.review)}</blockquote></div>` : ""}
+      <div class="sect"><h4>상태</h4><p>${it.done ? "감상 완료" : "아직 안 봤어요"}${pending.has(it.key) ? " · 저장 중" : ""}</p></div>
+      ${canEdit() ? `<button class="btn wide ${it.done ? "" : "acc"}" data-key="${esc(it.key)}" id="sheet-toggle">
+        ${it.done ? "체크 해제" : "감상 완료로 표시"}</button>` : ""}
+      <p class="sect hint" style="margin:0">${esc(g.file)}</p>
+    </div>`;
+  paint($("canvas", sheet), g, it.key);
+  if (!keepOpen) sheet.showModal();
 }
 
 /* ── 이벤트 ─────────────────────────────────────────── */
@@ -514,23 +728,58 @@ $("#games").addEventListener("keydown", e => {
   $(`.game[data-id="${CSS.escape(next.id)}"]`).focus();
   e.preventDefault();
 });
+
+// 길게 누르면(또는 제목을 누르면) 상세 시트
+let pressTimer = null, pressRow = null, pressAt = null;
+function endPress(){
+  clearTimeout(pressTimer);
+  pressRow?.classList.remove("pressing");
+  pressTimer = pressRow = pressAt = null;
+}
+$("#detail").addEventListener("pointerdown", e => {
+  const row = e.target.closest(".row");
+  if (!row || e.target.closest(".box-btn")) return;
+  pressRow = row; pressAt = {x: e.clientX, y: e.clientY};
+  pressTimer = setTimeout(() => {
+    row.classList.add("pressing");
+    navigator.vibrate?.(12);
+    openSheet(current, +$(".r-title", row).dataset.i);
+    endPress();
+  }, 420);
+});
+$("#detail").addEventListener("pointermove", e => {
+  if (pressAt && Math.hypot(e.clientX - pressAt.x, e.clientY - pressAt.y) > 10) endPress();
+});
+for (const ev of ["pointerup", "pointercancel", "pointerleave", "scroll"])
+  $("#detail").addEventListener(ev, endPress, {passive: true});
+addEventListener("scroll", endPress, {passive: true});
+
 $("#detail").addEventListener("click", e => {
   const box = e.target.closest(".box-btn");
-  if (box){ toggle(box.dataset.key); return; }
+  if (box?.dataset.key){ toggle(box.dataset.key); return; }
+  const title = e.target.closest(".r-title");
+  if (title){ openSheet(current, +title.dataset.i); return; }
   const chip = e.target.closest(".chip");
   if (chip){
     filter = chip.dataset.f;
     store.set("sl-filter", filter);
-    renderDetail();
+    renderDetail(true);
+    paintAll();
     return;
   }
   const seg = e.target.closest(".seg");
   if (seg){
     let row = document.getElementById("item-" + seg.dataset.i);
-    if (!row){ filter = "all"; store.set("sl-filter", filter); renderDetail(); row = document.getElementById("item-" + seg.dataset.i); }
-    row.scrollIntoView({behavior: "smooth", block: "center"});
+    if (!row){ filter = "all"; store.set("sl-filter", filter); renderDetail(false); paintAll(); row = document.getElementById("item-" + seg.dataset.i); }
+    row.scrollIntoView({behavior: calm.matches ? "auto" : "smooth", block: "center"});
     row.classList.remove("flash"); void row.offsetWidth; row.classList.add("flash");
   }
+});
+sheet.addEventListener("click", e => {
+  if (e.target.closest("#sheet-close")){ sheet.close(); return; }
+  const t = e.target.closest("#sheet-toggle");
+  if (t) toggle(t.dataset.key);
+  if (e.target === sheet) sheet.close();   // 바깥을 누르면 닫기
 });
 $("#backlog").addEventListener("click", e => {
   const b = e.target.closest("button[data-key]");
@@ -599,9 +848,9 @@ async function load(){
   if (location.hash) current = decodeURIComponent(location.hash.slice(1));
   try {
     await load();
-    render();
+    render({entrance: true});
   } catch (e){
-    $("#detail").innerHTML = `<p class="empty">${esc(e.message)}</p>`;
+    $("#detail").innerHTML = `<p class="empty" style="padding:24px">${esc(e.message)}</p>`;
   }
 })();
 </script>
