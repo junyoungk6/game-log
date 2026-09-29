@@ -151,7 +151,7 @@
      "tags": [
       "이벤트 · 신년 필수"
      ],
-     "done": false,
+     "done": true,
      "key": "니케::NEW YEAR, NEW SWORD"
     },
     {
@@ -191,7 +191,7 @@
      "tags": [
       "이벤트 · 1.5주년 필수"
      ],
-     "done": false,
+     "done": true,
      "key": "니케::LAST KINGDOM"
     },
     {
@@ -600,13 +600,13 @@
     {
      "min": 249,
      "title": "4장 변하지 않는",
-     "done": false,
+     "done": true,
      "key": "림버스컴퍼니::4장 변하지 않는"
     },
     {
      "min": 62,
      "title": "4.5장 우.미.다",
-     "done": false,
+     "done": true,
      "key": "림버스컴퍼니::4.5장 우.미.다"
     },
     {
@@ -1033,7 +1033,7 @@
      "notes": [
       "22.04.19"
      ],
-     "done": false,
+     "done": true,
      "key": "블루아카이브::네버랜드에서의 술래잡기"
     },
     {
@@ -1723,5 +1723,5 @@
   }
  ],
  "backlog": [],
- "saved": "2026-09-29 03:11"
+ "saved": "2026-09-30 01:56"
 }
