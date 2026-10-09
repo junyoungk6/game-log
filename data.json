@@ -299,7 +299,7 @@
      "tags": [
       "이벤트 · 신년 필수"
      ],
-     "done": false,
+     "done": true,
      "key": "니케::FOOTSTEP, WALK, RUN"
     },
     {
@@ -1735,5 +1735,5 @@
   }
  ],
  "backlog": [],
- "saved": "2026-10-09 16:36"
+ "saved": "2026-10-10 02:46"
 }
