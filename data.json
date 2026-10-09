@@ -550,6 +550,26 @@
      "title": "메인 47~48지역",
      "done": false,
      "key": "니케::메인 47~48지역"
+    },
+    {
+     "min": 174,
+     "syn": "제목으로 미루어 코인 러시를 소재로 한 이벤트 이야기로 추정.",
+     "title": "COIN RUSH SHOWDOWN",
+     "tags": [
+      "이벤트 · 선택"
+     ],
+     "done": false,
+     "key": "니케::COIN RUSH SHOWDOWN"
+    },
+    {
+     "min": 150,
+     "syn": "WAVE TO YOU에서 있었던 일이 단편적으로 언급되는 사이드 스토리로 추정.",
+     "title": "GINGERBREAD HOUSE",
+     "tags": [
+      "사이드 필수"
+     ],
+     "done": false,
+     "key": "니케::GINGERBREAD HOUSE"
     }
    ]
   },
@@ -1735,5 +1755,5 @@
   }
  ],
  "backlog": [],
- "saved": "2026-10-10 02:46"
+ "saved": "2026-10-10 02:56"
 }
